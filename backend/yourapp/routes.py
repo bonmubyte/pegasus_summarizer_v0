@@ -1,31 +1,49 @@
-from flask import request, jsonify
+from flask import request, jsonify, send_from_directory
 from yourapp import app, db
 from yourapp.models import TextRecord
-# Assuming you're using a dummy summarization for demonstration
-# Replace this with actual summarization logic using your preferred model
-
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+import os
+'''
+# Serve the index.html file from the frontend directory
 @app.route('/')
 def index():
-    return "Hello, World!"
+    print("Serving index.html")
+    FRONTEND_FOLDER = os.path.abspath("../../frontend")
+    return send_from_directory(FRONTEND_FOLDER, 'index.html')
+'''
+@app.route('/')
+def index():
+    # Navigate up one directory from the 'yourapp' package to the 'backend' directory
+    backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    return send_from_directory(backend_dir, 'index.html')
 
+# Serve static files (css, js, images, etc.)
+@app.route('/<path:path>')
+def static_proxy(path):
+    FRONTEND_FOLDER = os.path.abspath("../../frontend")  # Adjust the path as necessary
+    return send_from_directory(FRONTEND_FOLDER, path)
+
+# Summarization route
 @app.route('/summarize', methods=['POST'])
 def summarize():
-    data = request.json
-    input_text = data.get('input_text', '')
+    data = request.get_json()
+    text = data['text']
 
-    if not input_text:
-        return jsonify({"error": "No input text provided"}), 400
+    tokenizer = PegasusTokenizer.from_pretrained('tuner007/pegasus_summarizer')
+    model = PegasusForConditionalGeneration.from_pretrained('tuner007/pegasus_summarizer')
 
-    # Dummy summarization logic; replace with actual model inference
-    output_text = input_text[:50]  # Truncate text for demonstration
+    tokens = tokenizer(text, truncation=True, padding='longest', return_tensors='pt')
+    summary_ids = model.generate(tokens['input_ids'], num_beams=4, max_length=60, min_length=20, length_penalty=2.0, early_stopping=True)
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-    text_record = TextRecord(input_text=input_text, output_text=output_text)
-    db.session.add(text_record)
+    record = TextRecord(input_text=text, output_text=summary)  # Ensure you use 'text' from 'data' for 'input_text'
+    db.session.add(record)
     db.session.commit()
 
-    return jsonify({'input_text': input_text, 'output_text': output_text})
+    return jsonify({'summary': summary})
 
+# Route to fetch all records
 @app.route('/records', methods=['GET'])
 def get_records():
     records = TextRecord.query.all()
-    return jsonify([{'id': r.id, 'input': r.input_text, 'output': r.output_text} for r in records])
+    return jsonify([{'input': r.input_text, 'output': r.output_text} for r in records])
