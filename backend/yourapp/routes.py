@@ -1,8 +1,11 @@
-from flask import request, jsonify, send_from_directory, render_template
+from flask import request, jsonify, send_from_directory, render_template, Response
 from yourapp import app, db
 from yourapp.models import TextRecord
 from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 import os
+from io import StringIO
+import csv
+
 '''
 # Serve the index.html file from the frontend directory
 @app.route('/')
@@ -57,7 +60,30 @@ def summarize():
     return jsonify({'summary': summary})
 
 # Route to fetch all records
-@app.route('/records', methods=['GET'])
-def get_records():
+@app.route('/records')
+def records():
     records = TextRecord.query.all()
-    return jsonify([{'input': r.input_text, 'output': r.output_text} for r in records])
+    return render_template('records.html', records=records)
+
+@app.route('/download-csv')
+def download_csv():
+    records = TextRecord.query.all()
+
+    def generate_csv():
+        data = StringIO()
+        writer = csv.writer(data)
+
+        # Write header
+        writer.writerow(['Input Text', 'Output Text'])
+
+        # Write records
+        for record in records:
+            writer.writerow([record.input_text, record.output_text])
+            data.seek(0)
+            yield data.read()
+            data.seek(0)
+            data.truncate(0)
+
+    response = Response(generate_csv(), mimetype='text/csv')
+    response.headers.set('Content-Disposition', 'attachment', filename='records.csv')
+    return response

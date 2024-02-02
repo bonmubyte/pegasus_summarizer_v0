@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stored Records</title>
+</head>
+<body>
+    <h1>Stored Records</h1>
+    <ul>
+        {% for record in records %}
+        <li>
+            <strong>Input:</strong> {{ record.input_text }}<br>
+            <strong>Output:</strong> {{ record.output_text }}
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+<!-- Button to download records as CSV -->
+<form action="/download-csv" method="get">
+    <button type="submit">Download as CSV</button>
+</form>
+</html>
