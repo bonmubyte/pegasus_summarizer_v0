@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* Stack items vertically */
+    min-height: 100vh;
+    margin: 0;
+    background: #f0f0f0;
+    padding: 20px; /* Add some padding around the edges */
+}
+
+/* Style adjustments for input and output text areas */
+#input-text, #output-text {
+    width: 80%; /* Adjust width as needed */
+    margin-bottom: 20px; /* Add space below each text area */
+    padding: 10px; /* Padding inside text areas */
+    font-size: 16px; /* Increase font size for better readability */
+    border: 1px solid #ccc; /* Add a border */
+    border-radius: 4px; /* Round the corners */
+}
+
+#output-text {
+    background-color: #f7f7f7; /* Slightly different background for output */
+}
+
+/* Style for the Summarize button */
+#summarize-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px; /* Space above the Loading indicator */
+}
+
+/* Style for the Loading indicator */
+#loading {
+    display: none; /* Hidden by default */
+    margin-bottom: 20px; /* Space below the Loading indicator */
+}
+
+/* Ensures content doesn't extend beyond viewport height */
+.container {
+    max-height: 100vh;
+    overflow: auto; /* Allows scrolling if content exceeds viewport height */
+}

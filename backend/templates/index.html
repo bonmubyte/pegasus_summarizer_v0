@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Summarizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container"> <!-- Start of container div -->
+        <h1>News Summarizer</h1>
+        
+        <!-- Text area for input text -->
+        <textarea id="input-text" rows="10" cols="50">Enter text to summarize...</textarea>
+        
+        <!-- Summarize button -->
+        <button id="summarize-btn">Summarize</button>
+        
+        <!-- Loading indicator, hidden initially -->
+        <div id="loading" style="display:none;">Loading...</div>
+        
+        <!-- Container to display the summary result -->
+        <div id="summary-result"></div>
+    </div> <!-- End of container div -->
+    
+    <!-- Include your external JavaScript file -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <script>
+    // JavaScript for handling the Summarize button click event
+    document.getElementById("summarize-btn").addEventListener("click", function() {
+        var textToSummarize = document.getElementById("input-text").value; // Get text from textarea
+        document.getElementById("loading").style.display = 'block'; // Show loading indicator
+
+        fetch('/summarize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: textToSummarize }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("loading").style.display = 'none'; // Hide loading indicator
+            document.getElementById("summary-result").innerText = data.summary; // Display the summary result
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            document.getElementById("loading").style.display = 'none'; // Ensure loading indicator is hidden on error
+        });
+    });
+    </script>
+</body>
+</html>
